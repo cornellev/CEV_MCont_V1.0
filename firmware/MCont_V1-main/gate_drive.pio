@@ -1,0 +1,43 @@
+; Program name
+.program gate_drive
+
+.wrap_target
+
+pull block
+out pins, 6 [31]
+nop [31]
+out pins, 6	
+
+.wrap
+
+% c-sdk {
+static inline void gate_drive_program_init(PIO pio, uint sm, uint offset, uint pin) {
+
+    pio_sm_config c = gate_drive_program_get_default_config(offset);
+
+    // Map the state machine's SET and OUT pin group to three pins, the `pin`
+    // parameter to this function is the lowest one. These groups overlap.
+    sm_config_set_set_pins(&c, pin, 6);
+    sm_config_set_out_pins(&c, pin, 6);
+
+    // longer FIFO to avoid bursty data
+    // sm_config_set_fifo_join (&c, PIO_FIFO_JOIN_TX) ;
+
+    // Set this pin's GPIO function (connect PIO to the pad)
+    pio_gpio_init(pio, pin);
+    pio_gpio_init(pio, pin+1);
+    pio_gpio_init(pio, pin+2);
+    pio_gpio_init(pio, pin+3);
+    pio_gpio_init(pio, pin+4);
+    pio_gpio_init(pio, pin+5);
+    
+    // Set the pin direction to output at the PIO (6 pins)
+    pio_sm_set_consecutive_pindirs(pio, sm, pin, 6, true);
+
+    // Load our configuration, and jump to the start of the program
+    pio_sm_init(pio, sm, offset, &c);
+
+    // Set the state machine running (commented out, I'll start this in the C)
+    // pio_sm_set_enabled(pio, sm, true);
+}
+%}
