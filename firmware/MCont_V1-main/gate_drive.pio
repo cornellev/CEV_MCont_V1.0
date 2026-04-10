@@ -6,6 +6,8 @@
 pull block
 out pins, 6 [31]
 nop [31]
+nop [31]
+nop [31]
 out pins, 6	
 
 .wrap
